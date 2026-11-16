@@ -16,7 +16,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [36], qualifiers = "w412dp-h915dp")
+@Config(sdk = [36], qualifiers = "w360dp-h800dp")
 class MainActivitySmokeTest {
 
     @get:Rule
@@ -26,8 +26,11 @@ class MainActivitySmokeTest {
     fun mainActivityOpensDirectlyIntoTrainingsAndNavigatesAllTabs() {
         composeRule.waitForIdle()
 
-        // 1. Direct entry into Диктор PRO without auth wall
+        // 1. Direct entry into Диктор PRO without auth wall & compact TopAppBar icons visible
         composeRule.onNodeWithText("Диктор PRO").assertIsDisplayed()
+        composeRule.onNodeWithTag("open_help_button").assertIsDisplayed()
+        composeRule.onNodeWithTag("sound_mute_button").assertIsDisplayed()
+        composeRule.onNodeWithTag("studio_status_menu_button").assertIsDisplayed()
         composeRule.onNodeWithTag("trainings_list")
             .performScrollToNode(hasTestTag("start_daily_course_button"))
         composeRule.waitForIdle()
@@ -46,6 +49,9 @@ class MainActivitySmokeTest {
         composeRule.onNodeWithTag("nav_tab_studio").performClick()
         composeRule.waitForIdle()
         composeRule.onNodeWithText("СТУДИЙНЫЙ ТЕЛЕСУФЛЕР").assertIsDisplayed()
+        composeRule.onNodeWithTag("studio_list")
+            .performScrollToNode(hasTestTag("studio_record_button"))
+        composeRule.waitForIdle()
         composeRule.onNodeWithTag("studio_record_button").assertIsDisplayed()
 
         // 4. Switch to Diction & Tempo tab

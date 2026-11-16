@@ -179,7 +179,8 @@ fun StudioTab(
         LazyColumn(
             modifier = Modifier
                 .widthIn(max = 600.dp)
-                .fillMaxSize(),
+                .fillMaxSize()
+                .testTag("studio_list"),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {

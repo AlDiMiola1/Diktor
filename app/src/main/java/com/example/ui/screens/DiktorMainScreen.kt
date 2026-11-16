@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -27,6 +28,7 @@ import androidx.compose.material.icons.automirrored.filled.Login
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.automirrored.filled.VolumeOff
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.LocalFireDepartment
@@ -35,7 +37,6 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -61,6 +62,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -388,13 +390,14 @@ private fun DiktorTopHeader(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 10.dp),
+                .padding(horizontal = 12.dp, vertical = 10.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.weight(1f, fill = false)
             ) {
                 Box(
                     modifier = Modifier
@@ -413,48 +416,46 @@ private fun DiktorTopHeader(
                 Text(
                     text = "Диктор PRO",
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black),
-                    color = StudioTextPrimary
+                    color = StudioTextPrimary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                Surface(
-                    shape = RoundedCornerShape(10.dp),
-                    color = StudioCard,
-                    border = androidx.compose.foundation.BorderStroke(1.dp, StudioBorder),
+                Box(
+                    contentAlignment = Alignment.Center,
                     modifier = Modifier
-                        .defaultMinSize(minHeight = 36.dp)
-                        .clip(RoundedCornerShape(10.dp))
+                        .size(30.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(StudioCard, RoundedCornerShape(8.dp))
+                        .border(1.dp, StudioBorder, RoundedCornerShape(8.dp))
                         .clickable { onOpenHelp() }
                         .testTag("open_help_button")
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.HelpOutline,
-                            contentDescription = "Справка",
-                            tint = StudioCyan,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Text("Справка", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = StudioTextPrimary)
-                    }
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.HelpOutline,
+                        contentDescription = "Справка",
+                        tint = StudioCyan,
+                        modifier = Modifier.size(16.dp)
+                    )
                 }
 
                 Surface(
-                    shape = RoundedCornerShape(10.dp),
+                    shape = RoundedCornerShape(8.dp),
                     color = StudioAmber.copy(alpha = 0.14f),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, StudioAmber.copy(alpha = 0.4f))
+                    border = androidx.compose.foundation.BorderStroke(1.dp, StudioAmber.copy(alpha = 0.4f)),
+                    modifier = Modifier
+                        .height(30.dp)
+                        .defaultMinSize(minWidth = 44.dp)
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(2.dp),
-                        modifier = Modifier.padding(horizontal = 7.dp, vertical = 6.dp)
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier.padding(horizontal = 6.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Filled.LocalFireDepartment,
@@ -462,59 +463,63 @@ private fun DiktorTopHeader(
                             tint = StudioAmber,
                             modifier = Modifier.size(14.dp)
                         )
+                        Spacer(modifier = Modifier.size(2.dp))
                         Text(
                             text = "${streakDays}д",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Black,
-                            color = StudioAmber
+                            color = StudioAmber,
+                            maxLines = 1
                         )
                     }
                 }
 
-                IconButton(
-                    onClick = onToggleMute,
+                Box(
+                    contentAlignment = Alignment.Center,
                     modifier = Modifier
-                        .size(36.dp)
-                        .background(StudioCard, RoundedCornerShape(10.dp))
-                        .border(1.dp, StudioBorder, RoundedCornerShape(10.dp))
+                        .size(30.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(StudioCard, RoundedCornerShape(8.dp))
+                        .border(1.dp, StudioBorder, RoundedCornerShape(8.dp))
+                        .clickable { onToggleMute() }
                         .testTag("sound_mute_button")
                 ) {
                     Icon(
                         imageVector = if (isMuted) Icons.AutoMirrored.Filled.VolumeOff else Icons.AutoMirrored.Filled.VolumeUp,
                         contentDescription = if (isMuted) "Включить звук" else "Выключить звук",
                         tint = if (isMuted) StudioRose else StudioCyan,
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(16.dp)
                     )
                 }
 
                 Box {
-                    Surface(
-                        shape = RoundedCornerShape(10.dp),
-                        color = StudioCard,
-                        border = androidx.compose.foundation.BorderStroke(1.dp, StudioBorder),
+                    Box(
+                        contentAlignment = Alignment.Center,
                         modifier = Modifier
-                            .defaultMinSize(minHeight = 36.dp)
-                            .clip(RoundedCornerShape(10.dp))
+                            .size(32.dp)
+                            .clip(CircleShape)
+                            .background(
+                                if (isSignedIn) StudioEmerald.copy(alpha = 0.14f) else StudioCard,
+                                CircleShape
+                            )
                             .clickable { menuExpanded = true }
                             .testTag("studio_status_menu_button")
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(5.dp),
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(7.dp)
-                                    .background(if (isRecordingAny) StudioRose else StudioEmerald, CircleShape)
-                            )
-                            Text(
-                                text = if (isRecordingAny) "ON AIR" else "REC",
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Black,
-                                color = if (isRecordingAny) StudioRose else StudioEmerald
-                            )
-                        }
+                        Icon(
+                            imageVector = Icons.Default.AccountCircle,
+                            contentDescription = if (isSignedIn) "Профиль Google" else "Войти в аккаунт",
+                            tint = if (isSignedIn) StudioEmerald else StudioAmber,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+                    if (isRecordingAny) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .size(8.dp)
+                                .background(StudioRose, CircleShape)
+                                .border(1.dp, StudioBg, CircleShape)
+                        )
                     }
 
                     DropdownMenu(
