@@ -1,0 +1,225 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global safety net: deny everything by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidUserProgress(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.completedExercises is list && data.completedExercises.size() <= 100 &&
+             (data.completedExercises.size() == 0 || data.completedExercises[0] is string) &&
+             data.totalExerciseRuns is int && data.totalExerciseRuns >= 0 &&
+             data.completedPrograms is int && data.completedPrograms >= 0 &&
+             data.egorkiBestCount is int && data.egorkiBestCount >= 0 &&
+             data.streakDays is int && data.streakDays >= 0 &&
+             data.courseDayNumber is int && data.courseDayNumber >= 1 &&
+             data.completedDates is list && data.completedDates.size() <= 400 &&
+             (data.completedDates.size() == 0 || data.completedDates[0] is string) &&
+             data.lastCompletedCourseDate is string && data.lastCompletedCourseDate.size() <= 32 &&
+             data.lastAdvancedDate is string && data.lastAdvancedDate.size() <= 32 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidCustomScript(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.genre in ['custom', 'news', 'trailer', 'audiobook'] &&
+             data.genreLabel is string && data.genreLabel.size() >= 1 && data.genreLabel.size() <= 40 &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 120 &&
+             data.text is string && data.text.size() >= 1 && data.text.size() <= 10000 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidCustomTwister(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.soundTag is string && data.soundTag.size() >= 1 && data.soundTag.size() <= 60 &&
+             data.difficulty in ['Базовая', 'Сложная', 'Хардкор'] &&
+             data.text is string && data.text.size() >= 1 && data.text.size() <= 2000 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidCustomDictionTable(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 120 &&
+             data.syllables is list && data.syllables.size() >= 1 && data.syllables.size() <= 200 &&
+             data.syllables[0] is string &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidAiEvaluation(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.dateLabel is string && data.dateLabel.size() >= 1 && data.dateLabel.size() <= 40 &&
+             data.scriptTitle is string && data.scriptTitle.size() >= 1 && data.scriptTitle.size() <= 150 &&
+             data.modeLabel is string && data.modeLabel.size() >= 1 && data.modeLabel.size() <= 60 &&
+             data.headline is string && data.headline.size() >= 1 && data.headline.size() <= 120 &&
+             data.totalScore is int && data.totalScore >= 1 && data.totalScore <= 10 &&
+             data.chestScore is int && data.chestScore >= 1 && data.chestScore <= 10 &&
+             data.supportScore is int && data.supportScore >= 1 && data.supportScore <= 10 &&
+             data.pauseScore is int && data.pauseScore >= 1 && data.pauseScore <= 10 &&
+             data.dictionScore is int && data.dictionScore >= 1 && data.dictionScore <= 10 &&
+             data.critique is string && data.critique.size() >= 1 && data.critique.size() <= 1000 &&
+             data.advice is string && data.advice.size() >= 1 && data.advice.size() <= 1000 &&
+             data.recommendedExId is string && data.recommendedExId.size() >= 1 && data.recommendedExId.size() <= 60 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    match /users/{userId} {
+      allow get: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
+      allow list: if false;
+
+      allow create: if isSignedIn() &&
+                       isValidId(userId) &&
+                       request.auth.uid == userId &&
+                       incoming().keys().hasAll([
+                         'userId', 'completedExercises', 'totalExerciseRuns',
+                         'completedPrograms', 'egorkiBestCount', 'streakDays',
+                         'courseDayNumber', 'completedDates', 'lastCompletedCourseDate',
+                         'lastAdvancedDate', 'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'userId', 'completedExercises', 'totalExerciseRuns',
+                         'completedPrograms', 'egorkiBestCount', 'streakDays',
+                         'courseDayNumber', 'completedDates', 'lastCompletedCourseDate',
+                         'lastAdvancedDate', 'createdAt', 'updatedAt'
+                       ]) &&
+                       isValidUserProgress(incoming());
+
+      allow update: if isSignedIn() &&
+                       isValidId(userId) &&
+                       request.auth.uid == userId &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       isValidUserProgress(incoming()) &&
+                       incoming().diff(existing()).affectedKeys().hasOnly([
+                         'completedExercises', 'totalExerciseRuns',
+                         'completedPrograms', 'egorkiBestCount', 'streakDays',
+                         'courseDayNumber', 'completedDates', 'lastCompletedCourseDate',
+                         'lastAdvancedDate', 'updatedAt'
+                       ]);
+
+      allow delete: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
+
+      match /customScripts/{scriptId} {
+        allow get: if isSignedIn() && isValidId(userId) && isValidId(scriptId) && request.auth.uid == userId;
+        allow list: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
+
+        allow create: if isSignedIn() &&
+                         isValidId(userId) &&
+                         isValidId(scriptId) &&
+                         request.auth.uid == userId &&
+                         incoming().keys().hasAll(['userId', 'genre', 'genreLabel', 'title', 'text', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'genre', 'genreLabel', 'title', 'text', 'createdAt', 'updatedAt']) &&
+                         isValidCustomScript(incoming());
+
+        allow update: if isSignedIn() &&
+                         isValidId(userId) &&
+                         isValidId(scriptId) &&
+                         request.auth.uid == userId &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         isValidCustomScript(incoming()) &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['genre', 'genreLabel', 'title', 'text', 'updatedAt']);
+
+        allow delete: if isSignedIn() && isValidId(userId) && isValidId(scriptId) && request.auth.uid == userId;
+      }
+
+      match /customTwisters/{twisterId} {
+        allow get: if isSignedIn() && isValidId(userId) && isValidId(twisterId) && request.auth.uid == userId;
+        allow list: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
+
+        allow create: if isSignedIn() &&
+                         isValidId(userId) &&
+                         isValidId(twisterId) &&
+                         request.auth.uid == userId &&
+                         incoming().keys().hasAll(['userId', 'soundTag', 'difficulty', 'text', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'soundTag', 'difficulty', 'text', 'createdAt', 'updatedAt']) &&
+                         isValidCustomTwister(incoming());
+
+        allow update: if isSignedIn() &&
+                         isValidId(userId) &&
+                         isValidId(twisterId) &&
+                         request.auth.uid == userId &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         isValidCustomTwister(incoming()) &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['soundTag', 'difficulty', 'text', 'updatedAt']);
+
+        allow delete: if isSignedIn() && isValidId(userId) && isValidId(twisterId) && request.auth.uid == userId;
+      }
+
+      match /customDictionTables/{tableId} {
+        allow get: if isSignedIn() && isValidId(userId) && isValidId(tableId) && request.auth.uid == userId;
+        allow list: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
+
+        allow create: if isSignedIn() &&
+                         isValidId(userId) &&
+                         isValidId(tableId) &&
+                         request.auth.uid == userId &&
+                         incoming().keys().hasAll(['userId', 'title', 'syllables', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'title', 'syllables', 'createdAt', 'updatedAt']) &&
+                         isValidCustomDictionTable(incoming());
+
+        allow update: if isSignedIn() &&
+                         isValidId(userId) &&
+                         isValidId(tableId) &&
+                         request.auth.uid == userId &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         isValidCustomDictionTable(incoming()) &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['title', 'syllables', 'updatedAt']);
+
+        allow delete: if isSignedIn() && isValidId(userId) && isValidId(tableId) && request.auth.uid == userId;
+      }
+
+      match /aiEvaluations/{evalId} {
+        allow get: if isSignedIn() && isValidId(userId) && isValidId(evalId) && request.auth.uid == userId;
+        allow list: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
+
+        allow create: if isSignedIn() &&
+                         isValidId(userId) &&
+                         isValidId(evalId) &&
+                         request.auth.uid == userId &&
+                         incoming().keys().hasAll([
+                           'userId', 'dateLabel', 'scriptTitle', 'modeLabel',
+                           'headline', 'totalScore', 'chestScore', 'supportScore',
+                           'pauseScore', 'dictionScore', 'critique', 'advice',
+                           'recommendedExId', 'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'dateLabel', 'scriptTitle', 'modeLabel',
+                           'headline', 'totalScore', 'chestScore', 'supportScore',
+                           'pauseScore', 'dictionScore', 'critique', 'advice',
+                           'recommendedExId', 'createdAt', 'updatedAt'
+                         ]) &&
+                         isValidAiEvaluation(incoming());
+
+        allow update: if false;
+
+        allow delete: if isSignedIn() && isValidId(userId) && isValidId(evalId) && request.auth.uid == userId;
+      }
+    }
+  }
+}

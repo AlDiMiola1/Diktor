@@ -1,0 +1,6 @@
+{
+  "name": "Диктор PRO",
+  "description": "Студийный тренажер постановки голоса, дыхания, дикции, телесуфлера и ИИ-разбора речи.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

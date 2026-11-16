@@ -1,0 +1,140 @@
+{
+  "entities": {
+    "UserProgress": {
+      "title": "UserProgress",
+      "description": "User's voice training progress, 14-day daily course state, streak, and personal bests.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Authenticated user UID" },
+        "completedExercises": { "type": "array", "description": "List of completed exercise IDs" },
+        "totalExerciseRuns": { "type": "integer", "description": "Total completed exercise runs" },
+        "completedPrograms": { "type": "integer", "description": "Total completed daily/express programs" },
+        "egorkiBestCount": { "type": "integer", "description": "Personal record in 33 Egorki exercise" },
+        "streakDays": { "type": "integer", "description": "Current active training day streak" },
+        "courseDayNumber": { "type": "integer", "description": "Current unlocked day in the 14-day cycling course" },
+        "completedDates": { "type": "array", "description": "ISO yyyy-MM-dd dates when daily course was completed" },
+        "lastCompletedCourseDate": { "type": "string", "description": "ISO date of last completed daily course" },
+        "lastAdvancedDate": { "type": "string", "description": "ISO date when day number was auto-advanced" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server timestamp" }
+      },
+      "required": [
+        "userId",
+        "completedExercises",
+        "totalExerciseRuns",
+        "completedPrograms",
+        "egorkiBestCount",
+        "streakDays",
+        "courseDayNumber",
+        "completedDates",
+        "lastCompletedCourseDate",
+        "lastAdvancedDate",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "CustomScript": {
+      "title": "CustomScript",
+      "description": "User-authored teleprompter script with vocal markup.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Authenticated user UID" },
+        "genre": { "type": "string", "enum": ["custom", "news", "trailer", "audiobook"] },
+        "genreLabel": { "type": "string" },
+        "title": { "type": "string" },
+        "text": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "genre", "genreLabel", "title", "text", "createdAt", "updatedAt"]
+    },
+    "CustomTwister": {
+      "title": "CustomTwister",
+      "description": "User-authored tongue twister for diction practice.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Authenticated user UID" },
+        "soundTag": { "type": "string" },
+        "difficulty": { "type": "string", "enum": ["Базовая", "Сложная", "Хардкор"] },
+        "text": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "soundTag", "difficulty", "text", "createdAt", "updatedAt"]
+    },
+    "CustomDictionTable": {
+      "title": "CustomDictionTable",
+      "description": "User-authored consonant syllable matrix table.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Authenticated user UID" },
+        "title": { "type": "string" },
+        "syllables": { "type": "array" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "title", "syllables", "createdAt", "updatedAt"]
+    },
+    "AiEvaluation": {
+      "title": "AiEvaluation",
+      "description": "Voice recording evaluation from AI Director or local acoustic analyzer.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Authenticated user UID" },
+        "dateLabel": { "type": "string" },
+        "scriptTitle": { "type": "string" },
+        "modeLabel": { "type": "string" },
+        "headline": { "type": "string" },
+        "totalScore": { "type": "integer" },
+        "chestScore": { "type": "integer" },
+        "supportScore": { "type": "integer" },
+        "pauseScore": { "type": "integer" },
+        "dictionScore": { "type": "integer" },
+        "critique": { "type": "string" },
+        "advice": { "type": "string" },
+        "recommendedExId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "userId",
+        "dateLabel",
+        "scriptTitle",
+        "modeLabel",
+        "headline",
+        "totalScore",
+        "chestScore",
+        "supportScore",
+        "pauseScore",
+        "dictionScore",
+        "critique",
+        "advice",
+        "recommendedExId",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProgress" },
+      "description": "User's voice training progress document."
+    },
+    "/users/{userId}/customScripts/{scriptId}": {
+      "schema": { "$ref": "#/entities/CustomScript" },
+      "description": "User's custom teleprompter scripts."
+    },
+    "/users/{userId}/customTwisters/{twisterId}": {
+      "schema": { "$ref": "#/entities/CustomTwister" },
+      "description": "User's custom tongue twisters."
+    },
+    "/users/{userId}/customDictionTables/{tableId}": {
+      "schema": { "$ref": "#/entities/CustomDictionTable" },
+      "description": "User's custom consonant diction tables."
+    },
+    "/users/{userId}/aiEvaluations/{evalId}": {
+      "schema": { "$ref": "#/entities/AiEvaluation" },
+      "description": "User's AI vocal evaluation history."
+    }
+  }
+}
